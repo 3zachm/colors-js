@@ -1,0 +1,12 @@
+{
+	"token": "bot token",
+	"clientId": "bot id",
+	"guildId": "dev server id",
+
+	"dbInfo": {
+        "host": "localhost",
+        "user": "root",
+        "password": "",
+        "database": "colors_js"
+    }
+}
