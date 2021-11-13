@@ -12,11 +12,13 @@ module.exports = {
     guildGetRole: function(guildId, callback) {
         conn.query('SELECT role FROM guilds WHERE id = ?', [guildId], (err, result) => {
             if (err) return console.log(err);
-            return callback(result[0].role);
+            if (result.length > 0) return callback(result[0].role);
+            else module.exports.guildCreate(guildId);
+            return '0';
         });
     },
-    guildCreate: function(guildId) {
-        conn.query('INSERT INTO guilds (id, role) VALUES (?, ?)', [guildId, ''], (err, result) => {
+    guildCreate: function(guildId, defaultRole = '0') {
+        conn.query('INSERT INTO guilds (id, role) VALUES (?, ?)', [guildId, defaultRole], (err, result) => {
             if (err) return console.log(err);
             return result;
         });
@@ -24,7 +26,9 @@ module.exports = {
     guildSetRole: function(guildId, roleId) {
         conn.query('UPDATE guilds SET role = ? WHERE id = ?', [roleId, guildId], (err, result) => {
             if (err) return console.log(err);
-            return result;
+            if (result.length > 0) return result;
+            else module.exports.guildCreate(guildId, roleId);
+            return '0';
         });
     },
     killConnection: function() {
