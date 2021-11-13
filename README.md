@@ -1,5 +1,8 @@
 # colors-js
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/3zachm/colors-js/blob/main/LICENSE)
+[![CodeFactor](https://www.codefactor.io/repository/github/3zachm/colors-js/badge)](https://www.codefactor.io/repository/github/3zachm/colors-js) 
+
 Public invite [here](https://3zachm.dev/asayake/)!
 
 Made in the disappearance of Hex bot
