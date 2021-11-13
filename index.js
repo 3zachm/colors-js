@@ -28,6 +28,10 @@ for (const file of eventFiles) {
 
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
+	if (interaction.guildId == null) {
+		await interaction.reply({ content: 'I don\'t work in DMs!', ephemeral: true });
+		return;
+	}
 
 	const command = client.commands.get(interaction.commandName);
 
