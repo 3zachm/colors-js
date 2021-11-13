@@ -19,7 +19,10 @@ module.exports = {
     },
     guildCreate: function(guildId, defaultRole = '0') {
         conn.query('INSERT INTO guilds (id, role) VALUES (?, ?)', [guildId, defaultRole], (err, result) => {
-            if (err) return console.log(err);
+            if (err) {
+                if (err === 'ER_DUP_ENTRY') return;
+                return console.log(err);
+            }
             return result;
         });
     },
