@@ -2,6 +2,8 @@
 
 Public invite [here](https://3zachm.dev/asayake/)!
 
+Made in the disappearance of Hex bot
+
 ## Commands
 
 - `/role set` - Set role allowed to use colors
@@ -11,3 +13,7 @@ Public invite [here](https://3zachm.dev/asayake/)!
 - `/color reset` - Remove user role color
 - `/color view` - View current color
 - `/ping` - Test command
+
+## SQL "Setup"
+
+`create table guilds(id varchar(128), role varchar(128), primary key (id));`

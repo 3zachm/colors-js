@@ -3,8 +3,8 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
-		.setDescription('Replies with processing time'),
+		.setDescription('Check if I\'m online'),
 	async execute(interaction) {
-		await interaction.reply(`Pong! (${Date.now() - interaction.createdTimestamp}ms)`);
+		await interaction.reply({ content: `yo`, ephemeral: true });
 	},
 };

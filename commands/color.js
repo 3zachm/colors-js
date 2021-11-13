@@ -1,6 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-// const { Permissions } = require('discord.js');
+const { MessageEmbed, MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
+const { Permissions } = require('discord.js');
+const { colorCanvas } = require('../utils/colorCanvas');
 const { guildGetRole } = require('../utils/database');
+const { missingPermsUser, missingPermsBot } = require('../utils/embeds');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -17,7 +20,7 @@ module.exports = {
 				.setDescription('Set your color!')
 				.addStringOption(option =>
 					option.setName('color')
-						.setDescription('Color you want (#000000 hex format)')
+						.setDescription('Valid hex color (#000000), hashtag can be omitted')
 						.setRequired(true)),
 			)
         .addSubcommand(subcommand =>
@@ -27,72 +30,146 @@ module.exports = {
         ),
 	async execute(interaction) {
 		if (interaction.options.getSubcommand() === "set") {
-			let message = 'You don\'t have permission to run this command';
-			const color = interaction.options.getString('color');
+			let embed = missingPermsUser;
+			const color = "#" + interaction.options.getString('color').replaceAll('#', '');
+
+			if (!(color.length < 8 && /^#[0-9A-F]{6}$/i.test(color))) {
+				embed.setTitle('Invalid color');
+				embed.setDescription('Please use a valid hex color (`#000000`)\nHashtag can be omitted');
+				await interaction.reply({ embeds: [embed], ephemeral: true });
+				return;
+			}
+
 			guildGetRole(interaction.guild.id, async result => {
 				if (interaction.member.roles.cache.has(result) || result === "0") {
 					const roleName = "USER-" + interaction.member.id;
 					const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
 
-					if (userRole == undefined) {
-						const highest = interaction.guild.me.roles.highest.position;
-						message = `Color created!`;
-						const colorRole = await interaction.guild.roles.create({
-							name: roleName,
-							color: color, // change
-							reason: 'Color role update by slash command',
-							position: highest - 1,
-							permissions: [],
-						})
-							.catch(console.error); // UPDATE ERROR HANDLING
-						interaction.member.roles.add(colorRole);
-					}
-					else {
-						if (!interaction.member.roles.cache.has(userRole)) {
-							interaction.member.roles.add(userRole);
+					const row = new MessageActionRow()
+						.addComponents(
+							new MessageButton()
+								.setCustomId('color_yes')
+								// .setEmoji('✅')
+								.setLabel('Yes')
+								.setStyle('SUCCESS'),
+						)
+						.addComponents(
+							new MessageButton()
+								.setCustomId('color_no')
+								// .setEmoji('❌')
+								.setLabel('No')
+								.setStyle('DANGER'),
+						);
+					const file = new MessageAttachment(colorCanvas(color), 'color.png');
+					embed = new MessageEmbed()
+						.setColor(color)
+						.setTitle('Do you want this color?')
+						.setImage('attachment://color.png');
+					await interaction.reply({ embeds: [embed], files:[file], components: [row], ephemeral: false });
+
+					const filter = (buttonInt) => {
+						return interaction.user.id === buttonInt.user.id;
+					};
+
+					const collector = interaction.channel.createMessageComponentCollector({ filter, max: 1, time: 30000 });
+
+					collector.on('collect', async (buttonInt) => {
+						if (buttonInt.customId === 'color_yes') {
+							if (!interaction.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+								embed = missingPermsBot;
+								embed.setImage('attachment://color.png');
+								await interaction.editReply({ embeds: [embed], components: [], files:[file], ephemeral: false });
+								return;
+							}
+							if (userRole == undefined) {
+								const highest = interaction.guild.me.roles.highest.position;
+								const colorRole = await interaction.guild.roles.create({
+									name: roleName,
+									color: color, // change
+									reason: 'Color role update by slash command',
+									position: highest,
+									permissions: [],
+								});
+								interaction.member.roles.add(colorRole);
+							}
+							else {
+								if (!interaction.member.roles.cache.has(userRole)) {
+									if (!(interaction.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES) && interaction.guild.me.roles.highest.position > userRole.position)) {
+										embed = missingPermsBot;
+										embed.setImage('attachment://color.png');
+										await interaction.editReply({ embeds: [embed], components: [], files:[file], ephemeral: false });
+										return;
+									}
+									else {
+										interaction.member.roles.add(userRole);
+									}
+								}
+								if (interaction.guild.me.roles.highest.position < userRole.position) {
+									embed = missingPermsBot;
+									embed.setImage('attachment://color.png');
+									await interaction.editReply({ embeds: [embed], components: [], files:[file], ephemeral: false });
+									return;
+								}
+								interaction.guild.roles.edit(userRole, { color: color });
+							}
+							embed.setDescription("Color updated").setTitle("");
+							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
 						}
-						message = `Role Updated`;
-						interaction.guild.roles.edit(userRole, { color: color });
-					}
-					await interaction.reply({ content: message, ephemeral: false });
+						else if (buttonInt.customId === 'color_no') {
+							embed.setDescription("Color not changed").setTitle("");
+							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
+						}
+					});
 				}
 				else {
-					await interaction.reply({ content: message, ephemeral: false });
+					await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 			});
 		}
 		else if (interaction.options.getSubcommand() === "view") {
-			let message = 'Command failed';
+			let embed = new MessageEmbed()
+				.setDescription("Failed");
 			const roleName = "USER-" + interaction.member.id;
 			const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
 
 			if (userRole == undefined) {
-				message = `You have no color set`;
+				embed = new MessageEmbed()
+					.setDescription("No color set");
+				await interaction.reply({ embeds: [embed], ephemeral: false });
 			}
 			else {
-				message = userRole.hexColor;
+				const file = new MessageAttachment(colorCanvas(userRole.hexColor), 'color.png');
+				embed = new MessageEmbed()
+					.setColor(userRole.hexColor)
+					.setImage('attachment://color.png')
+					.setDescription("Your current color");
+				await interaction.reply({ embeds: [embed], files:[file], ephemeral: false });
 			}
-			await interaction.reply({ content: message, ephemeral: false });
 		}
 		else if (interaction.options.getSubcommand() === "reset") {
-			let message = 'You don\'t have permission to run this command';
+			let embed = missingPermsUser;
 			guildGetRole(interaction.guild.id, async result => {
 				if (interaction.member.roles.cache.has(result) || result === "0") {
 					const roleName = "USER-" + interaction.member.id;
 					const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
 
 					if (userRole == undefined) {
-						message = `You already have no color`;
+						embed = new MessageEmbed()
+							.setDescription(`You already have no color`);
 					}
 					else {
-
-						message = `Role deleted`;
+						if (interaction.guild.me.roles.highest.position < userRole.position) {
+							await interaction.reply({ embeds: [missingPermsBot], components: [], files:[], ephemeral: true });
+							return;
+						}
+						embed = new MessageEmbed()
+							.setDescription(`Your color role has been reset`);
 						userRole.delete();
 					}
-					await interaction.reply({ content: message, ephemeral: false });
+					await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 				else {
-					await interaction.reply({ content: message, ephemeral: false });
+					await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 			});
 		}

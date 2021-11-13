@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed } = require('discord.js');
 const { Permissions } = require('discord.js');
 const { guildSetRole, guildGetRole } = require('../utils/database');
+const { missingPermsAdmin } = require('../utils/embeds');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -27,13 +29,16 @@ module.exports = {
 		),
 	async execute(interaction) {
 		if (interaction.options.getSubcommand() === "set") {
-			let message = 'You don\'t have permission to run this command';
+			let embed = missingPermsAdmin;
 			const role = interaction.options.getRole('role');
 			if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
 				guildSetRole(interaction.guild.id, role.id);
-				message = `Role changed to <@&${role.id}> successfully.`;
+				embed = new MessageEmbed()
+					.setTitle(`Role changed successfully!`)
+					.setColor(`#00CC66`)
+					.setDescription(`Role changed to <@&${role.id}>`);
 			}
-			await interaction.reply({ content: message, ephemeral: false });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 		else if (interaction.options.getSubcommand() === "view") {
 			guildGetRole(interaction.guild.id, async result => {
@@ -41,16 +46,22 @@ module.exports = {
 				if (result === "0") {
 					message = 'Everyone can use color roles. Set a defined role with `/role set`';
 				}
-				await interaction.reply({ content: message, ephemeral: false });
+				const embed = new MessageEmbed()
+					.setColor('#a277ad')
+					.setDescription(message);
+				await interaction.reply({ embeds: [embed], ephemeral: false });
 			});
 		}
 		else if (interaction.options.getSubcommand() === "reset") {
-			let message = 'You don\'t have permission to run this command';
+			let embed = missingPermsAdmin;
 			if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
 				guildSetRole(interaction.guild.id, "0");
-				message = `Role requirement removed successfully!`;
+				embed = new MessageEmbed()
+					.setTitle(`Role requirement removed successfully!`)
+					.setColor(`#00CC66`)
+					.setDescription(`Everyone can now use colors.`);
 			}
-			await interaction.reply({ content: message, ephemeral: false });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 	},
 };

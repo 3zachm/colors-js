@@ -42,4 +42,8 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
+client.on("error", (e) => {
+	console.error(e);
+});
+
 client.login(token);
