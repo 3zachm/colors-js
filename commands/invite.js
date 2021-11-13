@@ -9,7 +9,7 @@ module.exports = {
 		const embed = new MessageEmbed()
 			.setColor('#a277ad')
             .setTitle("Invite Link")
-			.setDescription("You can invite me quickly through [here](https://discord.com/api/oauth2/authorize?client_id=907538185976946720&permissions=268438528&scope=bot) or through my [website](https://3zachm.dev/Asayake/)");
+			.setDescription("You can invite me quickly through [here](https://discord.com/api/oauth2/authorize?client_id=907538185976946720&permissions=268438528&scope=applications.commands%20bot) or through my [website](https://3zachm.dev/Asayake/)");
 		await interaction.reply({ embeds: [embed], ephemeral: false });
 	},
 };
