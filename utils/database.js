@@ -1,16 +1,11 @@
-const { createConnection } = require('mysql');
+const { createPool } = require('mysql');
 const { dbInfo } = require('../config.json');
 
-const conn = createConnection(dbInfo);
-
-conn.connect(err => {
-    if (err) return console.log(err);
-    console.log('Database connected\n');
-});
+const pool = createPool(dbInfo);
 
 module.exports = {
     guildGetRole: function(guildId, callback) {
-        conn.query('SELECT role FROM guilds WHERE id = ?', [guildId], (err, result) => {
+        pool.query('SELECT role FROM guilds WHERE id = ?', [guildId], (err, result) => {
             if (err) return console.log(err);
             if (result.length > 0) return callback(result[0].role);
             else module.exports.guildCreate(guildId);
@@ -18,7 +13,7 @@ module.exports = {
         });
     },
     guildCreate: function(guildId, defaultRole = '0') {
-        conn.query('INSERT INTO guilds (id, role) VALUES (?, ?)', [guildId, defaultRole], (err, result) => {
+        pool.query('INSERT INTO guilds (id, role) VALUES (?, ?)', [guildId, defaultRole], (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') return;
                 return console.log(err);
@@ -27,7 +22,7 @@ module.exports = {
         });
     },
     guildSetRole: function(guildId, roleId) {
-        conn.query('UPDATE guilds SET role = ? WHERE id = ?', [roleId, guildId], (err, result) => {
+        pool.query('UPDATE guilds SET role = ? WHERE id = ?', [roleId, guildId], (err, result) => {
             if (err) return console.log(err);
             if (result.length > 0) return result;
             else module.exports.guildCreate(guildId, roleId);
@@ -35,7 +30,7 @@ module.exports = {
         });
     },
     killConnection: function() {
-        conn.end(err => {
+        pool.end(err => {
             if (err) return console.log(err);
             console.log('Database disconnected\n');
         });
