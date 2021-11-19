@@ -1,7 +1,8 @@
 # colors-js
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/3zachm/colors-js/blob/main/LICENSE)
-[![CodeFactor](https://www.codefactor.io/repository/github/3zachm/colors-js/badge)](https://www.codefactor.io/repository/github/3zachm/colors-js) 
+[![CodeFactor](https://www.codefactor.io/repository/github/3zachm/colors-js/badge)](https://www.codefactor.io/repository/github/3zachm/colors-js)
+[![Discord Bots](https://top.gg/api/widget/servers/907538185976946720.svg)](https://top.gg/bot/907538185976946720)
 
 Public invite [here](https://3zachm.dev/asayake/)!
 
