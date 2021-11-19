@@ -7,6 +7,8 @@ Public invite [here](https://3zachm.dev/asayake/)!
 
 Made in the disappearance of Hex bot
 
+![asayake](https://3zachm.dev/img/asayake2.webp)
+
 ## Commands
 
 - `/role set` - Set role allowed to use colors
