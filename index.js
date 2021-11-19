@@ -1,10 +1,13 @@
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { token } = require('./config.json');
+const { AutoPoster } = require('topgg-autoposter');
+const { token, topGG } = require('./config.json');
 // eslint-disable-next-line no-unused-vars
 const db = require('./utils/database');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+
+const ap = AutoPoster(topGG, client);
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -47,6 +50,10 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on("error", (e) => {
+	console.error(e);
+});
+
+ap.on('error', (e) => {
 	console.error(e);
 });
 
