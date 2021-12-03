@@ -31,14 +31,17 @@ module.exports = {
 	async execute(interaction) {
 		if (interaction.options.getSubcommand() === "set") {
 			let embed = missingPermsUser;
-			const color = "#" + interaction.options.getString('color').replaceAll('#', '');
+			let colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
+			let color = colorHash
 
-			if (!(color.length < 8 && /^#[0-9A-F]{6}$/i.test(color))) {
+			if (!(colorHash.length < 8 && /^#[0-9A-F]{6}$/i.test(colorHash))) {
 				embed.setTitle('Invalid color');
 				embed.setDescription('Please use a valid hex color (`#000000`)\nHashtag can be omitted');
 				await interaction.reply({ embeds: [embed], ephemeral: true });
 				return;
 			}
+
+			if (colorHash === "#000000") { color = "BLACK"; }
 
 			guildGetRole(interaction.guild.id, async result => {
 				if (interaction.member.roles.cache.has(result) || result === "0") {
@@ -60,9 +63,9 @@ module.exports = {
 								.setLabel('No')
 								.setStyle('DANGER'),
 						);
-					const file = new MessageAttachment(colorCanvas(color), 'color.png');
+					const file = new MessageAttachment(colorCanvas(colorHash), 'color.png');
 					embed = new MessageEmbed()
-						.setColor(color)
+						.setColor(colorHash)
 						.setTitle('Do you want this color?')
 						.setImage('attachment://color.png');
 					await interaction.reply({ embeds: [embed], files:[file], components: [row], ephemeral: false });

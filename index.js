@@ -7,7 +7,12 @@ const db = require('./utils/database');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
-const ap = AutoPoster(topGG, client);
+if (topGG != null) {
+	const ap = AutoPoster(topGG, client);
+	ap.on('error', (e) => {
+		console.error(e);
+	});
+}
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -50,10 +55,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on("error", (e) => {
-	console.error(e);
-});
-
-ap.on('error', (e) => {
 	console.error(e);
 });
 
