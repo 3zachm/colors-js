@@ -31,8 +31,8 @@ module.exports = {
 	async execute(interaction) {
 		if (interaction.options.getSubcommand() === "set") {
 			let embed = missingPermsUser;
-			let colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
-			let color = colorHash
+			const colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
+			let color = colorHash;
 
 			if (!(colorHash.length < 8 && /^#[0-9A-F]{6}$/i.test(colorHash))) {
 				embed.setTitle('Invalid color');
