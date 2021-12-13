@@ -74,7 +74,7 @@ module.exports = {
 						return interaction.user.id === buttonInt.user.id;
 					};
 
-					const collector = interaction.channel.createMessageComponentCollector({ filter, max: 1, time: 30000 });
+					const collector = interaction.channel.createMessageComponentCollector({ filter, max: 1, time: 60000 });
 
 					collector.on('collect', async (buttonInt) => {
 						if (buttonInt.customId === 'color_yes') {
@@ -119,6 +119,13 @@ module.exports = {
 							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
 						}
 						else if (buttonInt.customId === 'color_no') {
+							embed.setDescription("Color not changed").setTitle("");
+							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
+						}
+					});
+
+					collector.on('end', async (collected, reason) => {
+						if (reason === 'time') {
 							embed.setDescription("Color not changed").setTitle("");
 							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
 						}
