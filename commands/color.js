@@ -168,7 +168,7 @@ module.exports = {
 							.setDescription(`You already have no color`);
 					}
 					else {
-						if (interaction.guild.me.roles.highest.position < userRole.position) {
+						if (!(interaction.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES) && interaction.guild.me.roles.highest.position > userRole.position)) {
 							await interaction.reply({ embeds: [missingPermsBot], components: [], files:[], ephemeral: true });
 							return;
 						}
