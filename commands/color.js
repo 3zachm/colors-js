@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed, MessageAttachment, MessageActionRow, MessageButton } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { Permissions, Constants } = require('discord.js');
 const { colorCanvas } = require('../utils/colorCanvas');
 const { guildGetRole } = require('../utils/database');
 const { missingPermsUser, missingPermsBot } = require('../utils/embeds');
@@ -127,7 +127,12 @@ module.exports = {
 					collector.on('end', async (collected, reason) => {
 						if (reason === 'time') {
 							embed.setDescription("Color not changed").setTitle("");
-							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false });
+							await interaction.editReply({ embeds: [embed], files:[file], components: [], ephemeral: false }).catch(error => {
+								if (error.code === Constants.APIErrors.UNKNOWN_MESSAGE) {
+									return; // message was deleted
+								}
+								console.error(error);
+							});
 						}
 					});
 				}
