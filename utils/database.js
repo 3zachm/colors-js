@@ -21,6 +21,12 @@ module.exports = {
             return result;
         });
     },
+    guildDelete: function(guildId) {
+        pool.query('DELETE FROM guilds WHERE id = ?', [guildId], (err, result) => {
+            if (err) return console.log(err);
+            return result;
+        });
+    },
     guildSetRole: function(guildId, roleId) {
         pool.query('UPDATE guilds SET role = ? WHERE id = ?', [roleId, guildId], (err, result) => {
             if (err) return console.log(err);
