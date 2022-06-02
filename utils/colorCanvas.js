@@ -5,8 +5,10 @@ function brightnessByColor(color) {
     const hasFullSpec = color.length == 7;
     const m = color.substr(1).match(hasFullSpec ? /(\S{2})/g : /(\S{1})/g);
     const r = parseInt(m[0] + (hasFullSpec ? '' : m[0]), 16), g = parseInt(m[1] + (hasFullSpec ? '' : m[1]), 16), b = parseInt(m[2] + (hasFullSpec ? '' : m[2]), 16);
-    if (typeof r != "undefined") return (((r * 299) + (g * 587) + (b * 114)) / 1000) / 255;
-    else return 1.0;
+    if (typeof r != "undefined") {
+        return (((r * 299) + (g * 587) + (b * 114)) / 1000) / 255;
+    }
+    return 1.0;
 }
 
 module.exports = {
@@ -21,13 +23,9 @@ module.exports = {
 
         ctx.font = '30px Courier';
         ctx.textAlign = 'center';
-        ctx.fillStyle = "black";
-        ctx.strokeStyle = 'black';
         // if color luminance is too dark, use white text
-        if (brightnessByColor(colorString) < 0.35) {
-            ctx.fillStyle = "white";
-            ctx.strokeStyle = "white";
-        }
+        ctx.fillStyle = (brightnessByColor(colorString) < 0.35) ? 'white' : 'black';
+        ctx.strokeStyle = (brightnessByColor(colorString) < 0.35) ? 'white' : 'black';
         ctx.lineWidth = 1;
         ctx.strokeText(colorString, x, y + 10);
 
