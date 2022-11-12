@@ -35,7 +35,6 @@ module.exports = {
 			let color = colorHash;
 
 			if (!(colorHash.length < 8 && /^#[0-9A-F]{6}$/i.test(colorHash))) {
-				console.log(">:(")
 				embed.setTitle('Invalid color');
 				embed.setDescription('Please use a valid hex color (`#000000`)\nHashtag can be omitted');
 				await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -191,3 +190,4 @@ module.exports = {
 		}
 	},
 };
+
