@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { guildSetRole, guildGetRole } = require('../utils/database');
 const { missingPermsAdmin } = require('../utils/embeds');
 
@@ -31,9 +30,9 @@ module.exports = {
 		if (interaction.options.getSubcommand() === "set") {
 			let embed = missingPermsAdmin;
 			const role = interaction.options.getRole('role');
-			if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+			if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
 				guildSetRole(interaction.guild.id, role.id);
-				embed = new MessageEmbed()
+				embed = new EmbedBuilder()
 					.setTitle(`Role changed successfully!`)
 					.setColor(`#00CC66`)
 					.setDescription(`Role changed to <@&${role.id}>`);
@@ -46,7 +45,7 @@ module.exports = {
 				if (result === "0") {
 					message = 'Everyone can use color roles. Set a defined role with `/role set`';
 				}
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor('#a277ad')
 					.setDescription(message);
 				await interaction.reply({ embeds: [embed], ephemeral: false });
@@ -54,9 +53,9 @@ module.exports = {
 		}
 		else if (interaction.options.getSubcommand() === "reset") {
 			let embed = missingPermsAdmin;
-			if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+			if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
 				guildSetRole(interaction.guild.id, "0");
-				embed = new MessageEmbed()
+				embed = new EmbedBuilder()
 					.setTitle(`Role requirement removed successfully!`)
 					.setColor(`#00CC66`)
 					.setDescription(`Everyone can now use colors.`);

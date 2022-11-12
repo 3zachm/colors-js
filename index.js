@@ -1,11 +1,11 @@
 const fs = require('fs');
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { AutoPoster } = require('topgg-autoposter');
 const { token, topGG } = require('./config.json');
 // eslint-disable-next-line no-unused-vars
 const db = require('./utils/database');
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 if (topGG != null) {
 	const ap = AutoPoster(topGG, client);
