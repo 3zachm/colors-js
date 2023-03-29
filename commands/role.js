@@ -34,7 +34,7 @@ module.exports = {
 				guildSetRole(interaction.guild.id, role.id);
 				embed = new EmbedBuilder()
 					.setTitle(`Role changed successfully!`)
-					.setColor(`#00CC66`)
+					.setColor(0x00CC66)
 					.setDescription(`Role changed to <@&${role.id}>`);
 			}
 			await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -46,7 +46,7 @@ module.exports = {
 					message = 'Everyone can use color roles. Set a defined role with `/role set`';
 				}
 				const embed = new EmbedBuilder()
-					.setColor('#a277ad')
+					.setColor(0xa277ad)
 					.setDescription(message);
 				await interaction.reply({ embeds: [embed], ephemeral: false });
 			});
@@ -57,7 +57,7 @@ module.exports = {
 				guildSetRole(interaction.guild.id, "0");
 				embed = new EmbedBuilder()
 					.setTitle(`Role requirement removed successfully!`)
-					.setColor(`#00CC66`)
+					.setColor(0x00CC66)
 					.setDescription(`Everyone can now use colors.`);
 			}
 			await interaction.reply({ embeds: [embed], ephemeral: true });

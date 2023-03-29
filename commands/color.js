@@ -32,7 +32,6 @@ module.exports = {
 		if (interaction.options.getSubcommand() === "set") {
 			let embed = missingPermsUser;
 			const colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
-			let color = colorHash;
 
 			if (!(colorHash.length < 8 && /^#[0-9A-F]{6}$/i.test(colorHash))) {
 				embed.setTitle('Invalid color');
@@ -41,7 +40,12 @@ module.exports = {
 				return;
 			}
 
-			if (colorHash === "#000000") { color = "BLACK"; }
+			let color = parseInt(colorHash.substring(1), 16);
+
+			// can't do 0x0, not a big deal no one would notice and im only keeping this alive cause people use it I guess!
+			if (color == 0x0) {
+				color = 0x1;
+			}
 
 			guildGetRole(interaction.guild.id, async result => {
 				if (interaction.member.roles.cache.has(result) || result === "0") {
@@ -65,7 +69,7 @@ module.exports = {
 						);
 					const file = new AttachmentBuilder(colorCanvas(colorHash), { name: 'color.png' });
 					embed = new EmbedBuilder()
-						.setColor(colorHash)
+						.setColor(color)
 						.setTitle('Do you want this color?')
 						.setImage('attachment://color.png');
 					await interaction.reply({ embeds: [embed], files:[file], components: [row], ephemeral: false });
