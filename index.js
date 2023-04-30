@@ -49,6 +49,11 @@ client.on('interactionCreate', async interaction => {
 		await command.execute(interaction);
 	}
     catch (error) {
+		// if Maximum number of server roles reached
+		if (error.code === 30005) {
+			await interaction.reply({ content: '**Maximum number of server roles reached (250)!** This bot is intended for smaller servers due to this limitation, sorry :(', ephemeral: true });
+			return;
+		}
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
