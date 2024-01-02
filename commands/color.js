@@ -3,7 +3,11 @@ const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Permis
 const { Constants } = require('discord.js');
 const { colorCanvas } = require('../utils/colorCanvas');
 const { guildGetRole } = require('../utils/database');
-const { missingPermsUser, missingPermsBot } = require('../utils/embeds');
+const { missingPermsUser, missingPermsBot, invalidColor } = require('../utils/embeds');
+
+const checkColor = (color) => {
+	return color.length < 8 && /^#[0-9A-F]{6}$/i.test(color);
+};
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -29,29 +33,47 @@ module.exports = {
                 .setDescription('Remove your color role'),
         ),
 	async execute(interaction) {
-		if (interaction.options.getSubcommand() === "set") {
-			let embed = missingPermsUser;
-			const colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
+		if (interaction.options.getSubcommand() === "view") {
+			const roleName = "USER-" + interaction.member.id;
+			const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
 
-			if (!(colorHash.length < 8 && /^#[0-9A-F]{6}$/i.test(colorHash))) {
-				embed.setTitle('Invalid color');
-				embed.setDescription('Please use a valid hex color (`#000000`)\nHashtag can be omitted');
-				await interaction.reply({ embeds: [embed], ephemeral: true });
-				return;
+			if (userRole == undefined) {
+				const embed = new EmbedBuilder()
+					.setDescription("No color set");
+				await interaction.reply({ embeds: [embed], ephemeral: false });
 			}
-
-			let color = parseInt(colorHash.substring(1), 16);
-
-			// can't do 0x0, not a big deal no one would notice and im only keeping this alive cause people use it I guess!
-			if (color == 0x0) {
-				color = 0x1;
+			else {
+				const file = new AttachmentBuilder(colorCanvas(userRole.hexColor), { name: 'color.png' });
+				const embed = new EmbedBuilder()
+					.setColor(userRole.hexColor)
+					.setImage('attachment://color.png')
+					.setDescription("Your current color");
+				await interaction.reply({ embeds: [embed], files:[file], ephemeral: false });
 			}
-
+		} else {
+			// all commands requiring the guild role are in the callback, exits early if not permitted
 			guildGetRole(interaction.guild.id, async result => {
-				if (interaction.member.roles.cache.has(result) || result === "0") {
+				const isPermitted = interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)
+									|| interaction.member.roles.cache.has(result)
+									|| result === "0";
+				if (!isPermitted) {
+					await interaction.reply({ embeds: [missingPermsUser], ephemeral: false });
+					return;
+				}
+				if (interaction.options.getSubcommand() === "set") {
+					const colorHash = "#" + interaction.options.getString('color').replaceAll('#', '');
+
+					if (!checkColor(colorHash)) {
+						await interaction.reply({ embeds: [invalidColor], ephemeral: true });
+						return;
+					}
+					let color = parseInt(colorHash.substring(1), 16);
+					// can't do 0x0, not a big deal no one would notice and im only keeping this alive cause people use it I guess!
+					if (color == 0x0) {
+						color = 0x1;
+					}
 					const roleName = "USER-" + interaction.member.id;
 					const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
-
 					const row = new ActionRowBuilder()
 						.addComponents(
 							new ButtonBuilder()
@@ -68,7 +90,7 @@ module.exports = {
 								.setStyle('Danger'),
 						);
 					const file = new AttachmentBuilder(colorCanvas(colorHash), { name: 'color.png' });
-					embed = new EmbedBuilder()
+					let embed = new EmbedBuilder()
 						.setColor(color)
 						.setTitle('Do you want this color?')
 						.setImage('attachment://color.png');
@@ -140,38 +162,10 @@ module.exports = {
 						}
 					});
 				}
-				else {
-					await interaction.reply({ embeds: [embed], ephemeral: false });
-				}
-			});
-		}
-		else if (interaction.options.getSubcommand() === "view") {
-			let embed = new EmbedBuilder()
-				.setDescription("Failed");
-			const roleName = "USER-" + interaction.member.id;
-			const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
-
-			if (userRole == undefined) {
-				embed = new EmbedBuilder()
-					.setDescription("No color set");
-				await interaction.reply({ embeds: [embed], ephemeral: false });
-			}
-			else {
-				const file = new AttachmentBuilder(colorCanvas(userRole.hexColor), { name: 'color.png' });
-				embed = new EmbedBuilder()
-					.setColor(userRole.hexColor)
-					.setImage('attachment://color.png')
-					.setDescription("Your current color");
-				await interaction.reply({ embeds: [embed], files:[file], ephemeral: false });
-			}
-		}
-		else if (interaction.options.getSubcommand() === "reset") {
-			let embed = missingPermsUser;
-			guildGetRole(interaction.guild.id, async result => {
-				if (interaction.member.roles.cache.has(result) || result === "0") {
+				else if (interaction.options.getSubcommand() === "reset") {
 					const roleName = "USER-" + interaction.member.id;
 					const userRole = interaction.guild.roles.cache.find(role => role.name === roleName);
-
+					let embed = undefined;
 					if (userRole == undefined) {
 						embed = new EmbedBuilder()
 							.setDescription(`You already have no color`);
@@ -185,9 +179,6 @@ module.exports = {
 							.setDescription(`Your color role has been reset`);
 						userRole.delete();
 					}
-					await interaction.reply({ embeds: [embed], ephemeral: false });
-				}
-				else {
 					await interaction.reply({ embeds: [embed], ephemeral: false });
 				}
 			});
